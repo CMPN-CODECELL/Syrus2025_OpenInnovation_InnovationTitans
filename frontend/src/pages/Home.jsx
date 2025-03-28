@@ -11,6 +11,7 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
     className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+
   >
     <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
       <Icon className="w-6 h-6 text-blue-600" />
@@ -155,7 +156,7 @@ const Home = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
                 <img
-                  src="https://illustrations.popsy.co/white/creative-team.svg"
+                  src="	data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD…EAQBAEAQBAEAQBAEAQBAEAQBAEAQBAEAQBAEAQBAEAQBAP//Z"
                   alt="Sustainable Finance"
                   className="relative z-10 w-full max-w-lg mx-auto animate-float"
                 />
