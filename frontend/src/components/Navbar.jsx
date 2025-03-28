@@ -1,106 +1,147 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, LogIn, UserPlus } from 'lucide-react';
-import { Button } from "../components/ui/button";
 import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { HiMenuAlt4, HiX } from 'react-icons/hi';
+import { twMerge } from 'tailwind-merge';
+
+const NavLink = ({ to, children, isActive }) => (
+  <Link
+    to={to}
+    className={twMerge(
+      "relative px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+      isActive 
+        ? "text-blue-600 bg-blue-50"
+        : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+    )}
+  >
+    {children}
+    {isActive && (
+      <motion.div
+        layoutId="activeIndicator"
+        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
+        initial={false}
+        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+      />
+    )}
+  </Link>
+);
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { name: 'Invest', path: '/invest' },
+    { name: 'How It Works', path: '/how-it-works' },
+    { name: 'Success Stories', path: '/success-stories' },
+    { name: 'Contact', path: '/contact' },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setScrolled(window.scrollY > 20);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isActive = (path) => {
-    return location.pathname === path ? "text-blue-600 font-semibold" : "opacity-80 hover:opacity-100"; 
-  };
-
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-sm' : 'bg-transparent'
-      }`}
+    <nav
+      className={twMerge(
+        "fixed w-full z-50 transition-all duration-300",
+        scrolled
+          ? "bg-white/80 backdrop-blur-md shadow-md"
+          : "bg-white shadow-sm"
+      )}
     >
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-xl">M</span>
-            </div>
-            <span className="font-medium text-xl">MicroFund</span>
-          </Link>
-          
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className={`text-sm font-medium transition-all ${isActive('/')}`}>Home</Link>
-            <Link to="/apply" className={`text-sm font-medium transition-all ${isActive('/apply')}`}>Apply for a Loan</Link>
-            <Link to="/invest" className={`text-sm font-medium transition-all ${isActive('/invest')}`}>Invest in Businesses</Link>
-            <Link to="/how-it-works" className={`text-sm font-medium transition-all ${isActive('/how-it-works')}`}>How It Works</Link>
-            <Link to="/success-stories" className={`text-sm font-medium transition-all ${isActive('/success-stories')}`}>Success Stories</Link>
-            <Link to="/contact" className={`text-sm font-medium transition-all ${isActive('/contact')}`}>Contact Us</Link>
-          </nav>
-          
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" className="rounded-full" asChild>
-              <Link to="/login">
-                <LogIn size={16} className="mr-1" />
-                Log In
-              </Link>
-            </Button>
-            <Button className="rounded-full" asChild>
-              <Link to="/register">
-                <UserPlus size={16} className="mr-1" />
-                Register
-              </Link>
-            </Button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex-shrink-0 flex items-center">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-bold">M</span>
+              </div>
+              <span className="text-2xl font-bold text-blue-900">MicroFund</span>
+            </Link>
           </div>
-          
-          <button 
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                isActive={location.pathname === item.path}
+              >
+                {item.name}
+              </NavLink>
+            ))}
+            <Link
+              to="/login"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              Login
+            </Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              aria-expanded="false"
+            >
+              {isOpen ? (
+                <HiX className="h-6 w-6" />
+              ) : (
+                <HiMenuAlt4 className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
-      
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-lg animate-slide-in">
-          <div className="px-6 py-6 space-y-4">
-            <Link to="/" className={`block text-sm font-medium py-2 ${isActive('/')}`}>Home</Link>
-            <Link to="/apply" className={`block text-sm font-medium py-2 ${isActive('/apply')}`}>Apply for a Loan</Link>
-            <Link to="/invest" className={`block text-sm font-medium py-2 ${isActive('/invest')}`}>Invest in Businesses</Link>
-            <Link to="/how-it-works" className={`block text-sm font-medium py-2 ${isActive('/how-it-works')}`}>How It Works</Link>
-            <Link to="/success-stories" className={`block text-sm font-medium py-2 ${isActive('/success-stories')}`}>Success Stories</Link>
-            <Link to="/contact" className={`block text-sm font-medium py-2 ${isActive('/contact')}`}>Contact Us</Link>
-            <div className="pt-4 flex flex-col space-y-3">
-              <Button variant="outline" className="rounded-full w-full" asChild>
-                <Link to="/login">
-                  <LogIn size={16} className="mr-1" />
-                  Log In
+
+      {/* Mobile Navigation */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-white border-t"
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={twMerge(
+                    "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                    location.pathname === item.path
+                      ? "text-blue-600 bg-blue-50"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                  )}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
                 </Link>
-              </Button>
-              <Button className="rounded-full w-full" asChild>
-                <Link to="/register">
-                  <UserPlus size={16} className="mr-1" />
-                  Register
-                </Link>
-              </Button>
+              ))}
+              <Link
+                to="/login"
+                className="block w-full text-center bg-blue-600 text-white px-4 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors mt-4"
+                onClick={() => setIsOpen(false)}
+              >
+                Login
+              </Link>
             </div>
-          </div>
-        </div>
-      )}
-    </header>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   );
 };
 
