@@ -1,44 +1,55 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import About from "./pages/About";
-//import ApplyForLoan from "./pages/ApplyForLoan";
-import InvestInBusinesses from "./pages/InvestInBusinesses";
-import HowItWorks from "./pages/HowItWorks";
-import SuccessStories from "./pages/SuccessStories";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import DashboardLayout from './components/DashboardLayout'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Apply from './pages/Apply'
+import Invest from './pages/Invest'
+import HowItWorks from './pages/HowItWorks'
+import SuccessStories from './pages/SuccessStories'
+import Contact from './pages/Contact'
+import Dashboard from './pages/Dashboard'
+import Investments from './pages/dashboard/Investments'
+import Wallet from './pages/dashboard/Wallet'
+import Transactions from './pages/dashboard/Transactions'
+import Opportunities from './pages/dashboard/Opportunities'
+import Documents from './pages/dashboard/Documents'
+import Analytics from './pages/dashboard/Analytics'
+import Notifications from './pages/dashboard/Notifications'
+import Settings from './pages/dashboard/Settings'
+import Help from './pages/dashboard/Help'
+import ApplyLoan from './pages/dashboard/ApplyLoan'
 
-const queryClient = new QueryClient();
+function App() {
+  const isDashboardRoute = (pathname) => pathname.startsWith('/dashboard');
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/apply" element={<ApplyForLoan />} />
-          <Route path="/invest" element={<InvestInBusinesses />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/success-stories" element={<SuccessStories />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  return (
+    <div className="min-h-screen">
+      {!isDashboardRoute(window.location.pathname) && <Navbar />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/invest" element={<Invest />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/success-stories" element={<SuccessStories />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+        <Route path="/dashboard/investments" element={<DashboardLayout><Investments /></DashboardLayout>} />
+        <Route path="/dashboard/wallet" element={<DashboardLayout><Wallet /></DashboardLayout>} />
+        <Route path="/dashboard/transactions" element={<DashboardLayout><Transactions /></DashboardLayout>} />
+        <Route path="/dashboard/opportunities" element={<DashboardLayout><Opportunities /></DashboardLayout>} />
+        <Route path="/dashboard/documents" element={<DashboardLayout><Documents /></DashboardLayout>} />
+        <Route path="/dashboard/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+        <Route path="/dashboard/apply" element={<DashboardLayout><ApplyLoan /></DashboardLayout>} />
+        <Route path="/dashboard/notifications" element={<DashboardLayout><Notifications /></DashboardLayout>} />
+        <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+        <Route path="/dashboard/help" element={<DashboardLayout><Help /></DashboardLayout>} />
+      </Routes>
+    </div>
+  )
+}
 
-export default App;
+export default App
