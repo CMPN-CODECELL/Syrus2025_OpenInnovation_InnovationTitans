@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaFileDownload, FaFilter } from 'react-icons/fa';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const TransactionRow = ({ date, type, description, amount, status }) => (
   <tr className="hover:bg-gray-50">
@@ -21,7 +23,8 @@ const TransactionRow = ({ date, type, description, amount, status }) => (
 );
 
 const Transactions = () => {
-  const transactions = [
+  // Expanded mock data with more entries
+  const allTransactions = [
     {
       date: '2024-02-15',
       type: 'Investment',
@@ -56,8 +59,101 @@ const Transactions = () => {
       description: 'Recycling Facility Investment',
       amount: '7,500',
       status: 'Failed'
+    },
+    // Additional mock transactions
+    {
+      date: '2024-02-10',
+      type: 'Deposit',
+      description: 'Freelance Payment',
+      amount: '3,500',
+      status: 'Completed'
+    },
+    {
+      date: '2024-02-09',
+      type: 'Investment',
+      description: 'Renewable Energy Fund',
+      amount: '15,000',
+      status: 'Completed'
+    },
+    {
+      date: '2024-02-08',
+      type: 'Withdrawal',
+      description: 'Monthly Expenses',
+      amount: '1,200',
+      status: 'Completed'
+    },
+    {
+      date: '2024-02-07',
+      type: 'Return',
+      description: 'Geothermal Project Dividend',
+      amount: '1,500',
+      status: 'Pending'
+    },
+    {
+      date: '2024-02-06',
+      type: 'Investment',
+      description: 'Electric Vehicle Startup',
+      amount: '20,000',
+      status: 'Completed'
+    },
+    {
+      date: '2024-02-05',
+      type: 'Deposit',
+      description: 'Annual Bonus',
+      amount: '25,000',
+      status: 'Completed'
     }
   ];
+
+  // State for search and filtering
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Filtering and searching logic
+  const filteredTransactions = useMemo(() => {
+    return allTransactions.filter(transaction => 
+      (typeFilter === 'All Types' || transaction.type === typeFilter) &&
+      (searchTerm === '' || 
+        Object.values(transaction).some(val => 
+          val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      )
+    );
+  }, [searchTerm, typeFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * itemsPerPage, 
+    currentPage * itemsPerPage
+  );
+
+  // Export to PDF functionality
+  const exportToPDF = () => {
+    // Create a new jsPDF instance
+    const doc = new jsPDF();
+  
+    // Prepare the data for the current view (filtered and paginated transactions)
+    const exportData = filteredTransactions.map(transaction => [
+      transaction.date,
+      transaction.type,
+      transaction.description,
+      `$${transaction.amount}`,
+      transaction.status
+    ]);
+  
+    // Add the table to the PDF
+    doc.autoTable({
+      head: [['Date', 'Type', 'Description', 'Amount', 'Status']],
+      body: exportData,
+      theme: 'striped'
+    });
+  
+    // Save the PDF
+    doc.save('transactions_export.pdf');
+  };
 
   return (
     <div className="p-8">
@@ -71,9 +167,12 @@ const Transactions = () => {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Transactions</h1>
             <p className="text-gray-600">View and manage your transaction history</p>
           </div>
-          <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={exportToPDF}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
             <FaFileDownload className="mr-2" />
-            Export
+            Export PDF
           </button>
         </div>
 
@@ -87,15 +186,23 @@ const Transactions = () => {
                 <input
                   type="text"
                   placeholder="Search transactions..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1); // Reset to first page on search
+                  }}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto"
                 />
               </div>
               <div className="flex space-x-4">
-                <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <FaFilter className="mr-2" />
-                  Filter
-                </button>
-                <select className="border border-gray-300 rounded-lg px-4 py-2">
+                <select 
+                  value={typeFilter}
+                  onChange={(e) => {
+                    setTypeFilter(e.target.value);
+                    setCurrentPage(1); // Reset to first page on filter
+                  }}
+                  className="border border-gray-300 rounded-lg px-4 py-2"
+                >
                   <option>All Types</option>
                   <option>Investment</option>
                   <option>Deposit</option>
@@ -110,25 +217,19 @@ const Transactions = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
+                  {["Date", "Type", "Description", "Amount", "Status"].map((header) => (
+                    <th 
+                      key={header}
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {transactions.map((transaction, index) => (
+                {paginatedTransactions.map((transaction, index) => (
                   <TransactionRow key={index} {...transaction} />
                 ))}
               </tbody>
@@ -138,22 +239,38 @@ const Transactions = () => {
           <div className="px-6 py-4 border-t">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-500">
-                Showing 1 to 5 of 50 entries
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} of{' '}
+                {filteredTransactions.length} entries
               </div>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                  1
-                </button>
-                <button className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  2
-                </button>
-                <button className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  3
-                </button>
-                <button className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50">
+
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-1 rounded-lg ${
+                      currentPage === i + 1 
+                        ? 'bg-blue-600 text-white' 
+                        : 'border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Next
                 </button>
               </div>
