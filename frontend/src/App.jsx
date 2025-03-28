@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import About from "./pages/About";
-import ApplyForLoan from "./pages/ApplyForLoan";
+//import ApplyForLoan from "./pages/ApplyForLoan";
 import InvestInBusinesses from "./pages/InvestInBusinesses";
 import HowItWorks from "./pages/HowItWorks";
 import SuccessStories from "./pages/SuccessStories";
